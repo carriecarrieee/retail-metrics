@@ -43,6 +43,7 @@ def retailer_total_units():
     
     df_drinks['Percent'] = df_drinks.transform(calc_percent)
     print items
+    print df_drinks
 
 retailer_total_units()
 
