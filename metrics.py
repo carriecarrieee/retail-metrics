@@ -27,6 +27,25 @@ def create_df():
 
 ################################################################################
 
+def retailer_total_units():
+    """Returns the total units sold of an energy drink at a given retailer."""
+
+    df = create_df()
+    store = df['Item Units'][df['Retailer'] == store]
+    store_units = store.sum()
+    drink_units_by_store = store[df['Parent Brand']].sum()
+
+    # print store_units, drink_units_by_store
+    items = df.groupby(['Retailer'])['Item Units'].sum().reset_index(name="Total Sold")
+    grouped = df.groupby(['Retailer', 'Parent Brand'])['Item Units']
+    df_drinks = grouped.sum()
+
+    
+    df_drinks['Percent'] = df_drinks.transform(calc_percent)
+    print items
+
+retailer_total_units()
+
 def retailer_affinity(focus_brand):
     """Returns the strongest retailer affinity of focus brand relative to other 
        brands. We will define retailer affinity by the retailer that sells the
@@ -35,15 +54,16 @@ def retailer_affinity(focus_brand):
     
     pass
 
-################################################################################
 
+
+
+################################################################################
 def count_hhs(brand=None, retailer=None, start_date=None, end_date=None):
     """Returns the number of households given any of the optional inputs."""
     
     pass
 
 ################################################################################
-
 def top_buying_brand():
     """Identifies the brand with the top buying rate ($ spent / HH)."""
     
