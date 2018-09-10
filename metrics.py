@@ -36,16 +36,29 @@ def retailer_total_units():
     #drink_units_by_store = store[df['Parent Brand']].sum()
 
     # print store_units, drink_units_by_store
-    items = df.groupby(['Retailer'])['Item Units'].sum().reset_index(name="Total Sold")
-    grouped = df.groupby(['Retailer', 'Parent Brand'])['Item Units']
-    df_drinks = grouped.sum()
+    #items = df.groupby(['Retailer'])['Item Units'].sum()
+    #grouped = df.groupby(['Retailer', 'Parent Brand'])['Item Units']
+    #df_drinks = grouped.sum()
 
+    df['Total'] = df.groupby(['Retailer'])['Item Units'].transform('sum')
 
+    df = pd.DataFrame({'Drinks': df.groupby(['Retailer', 'Parent Brand', \
+        'Total'])['Item Units'].sum()}).reset_index()
+    df['Percentage %'] = df['Drinks'] / df['Total'] * 100
+    df = df.set_index(['Retailer', 'Parent Brand'])
+
+    print df
+    by_brand = df.xs('Red Bull', level='Parent Brand')
+
+    print by_brand
+    print by_brand['Percentage %'].idxmax()
     
-    #print items.keys()
-    print df_drinks.groups
 
 retailer_total_units()
+
+
+
+
 
 def retailer_affinity(focus_brand):
     """Returns the strongest retailer affinity of focus brand relative to other 
