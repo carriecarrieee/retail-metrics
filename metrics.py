@@ -20,7 +20,7 @@ def create_df():
     df = pd.DataFrame(data) # Create DataFrame from CSV file
     
     if df.empty:
-        print "No data found!"
+        print "Error: No data found!"
     else:
         return df
 
@@ -39,18 +39,18 @@ def retailer_affinity(focus_brand):
     # Add column of total drink units per retailer to perform math 
     df['Total by Ret'] = df.groupby(['Retailer'])['Item Units'].transform('sum')
 
-    # Sum up column of total drink units per brand and saves it as new df
-    df = pd.DataFrame({'Drinks': df.groupby(['Retailer', 'Parent Brand', \
-        'Total by Ret'])['Item Units'].sum()}).reset_index()
+    # Sum up column of total drink units per brand
+    df = df.groupby(['Retailer', 'Parent Brand', 'Total by Ret']) \
+        ['Item Units'].sum().reset_index()
 
     # Add column of drinks per brand divided by total units per retailer
-    df['Percentage %'] = df['Drinks'] / df['Total by Ret'] * 100
+    df['Percentage %'] = df['Item Units'] / df['Total by Ret'] * 100
 
     # Create and query multiindex based on two columns in new df
     df = df.set_index(['Retailer', 'Parent Brand']).xs(focus_brand, level='Parent Brand')
 
     # Print row(s) with highest percentage, showing strongest retailer affinity
-    print "\n"
+    print "\n" + focus_brand + ":\n"
     print df[df['Percentage %'] == df['Percentage %'].max()]
     print "\n"
 
@@ -59,6 +59,10 @@ def retailer_affinity(focus_brand):
     print df.sort_values(by='Percentage %', ascending=False)
     print "\n\n"
 
+# retailer_affinity('Monster')
+# retailer_affinity('Red Bull')
+# retailer_affinity('Rockstar')
+# retailer_affinity('5 Hour Energy')
 
 ################################################################################
 
@@ -72,6 +76,19 @@ def count_hhs(brand=None, retailer=None, start_date=None, end_date=None):
 def top_buying_brand():
     """Identifies the brand with the top buying rate ($ spent / HH)."""
     
-    pass
+    df = create_df()
+
+    # print df.types
+
+    # Convert string obj to int type
+    df['Item Dollars'] = df['Item Dollars'].str[1:].astype(int)
+
+    # Sum up $ spent by each unique household ID
+    df = df.groupby(['Parent Brand', 'User ID'])['Item Dollars'].sum().reset_index()
+
+    print "\n" + "Brand with the top buying rate ($ spent / HH):" + "\n"
+    print df[df['Item Dollars'] == df['Item Dollars'].max()]
+
+# top_buying_brand()
 
 
