@@ -70,9 +70,16 @@ def retailer_affinity(focus_brand):
 def count_hhs(brand=None, retailer=None, start_date=None, end_date=None):
     """Returns the number of households given any of the optional inputs."""
     
-    pass
+    df = create_df()
+
+    print df.groupby([retailer])['User ID'].nunique()
+
+
+count_hhs(retailer="CVS")
 
 ################################################################################
+
+
 def top_buying_brand():
     """Identifies the brand with the top buying rate ($ spent / HH)."""
     
