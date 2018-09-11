@@ -37,28 +37,32 @@ def retailer_affinity(focus_brand):
     df = create_df()
 
     # Add column of total drink units per retailer to perform math 
-    df['Total'] = df.groupby(['Retailer'])['Item Units'].transform('sum')
+    df['Total by Ret'] = df.groupby(['Retailer'])['Item Units'].transform('sum')
 
-    # Sums up column of total drink units per brand and saves it as new df
+    # Sum up column of total drink units per brand and saves it as new df
     df = pd.DataFrame({'Drinks': df.groupby(['Retailer', 'Parent Brand', \
-        'Total'])['Item Units'].sum()}).reset_index()
+        'Total by Ret'])['Item Units'].sum()}).reset_index()
 
     # Add column of drinks per brand divided by total units per retailer
-    df['Percentage %'] = df['Drinks'] / df['Total'] * 100
+    df['Percentage %'] = df['Drinks'] / df['Total by Ret'] * 100
 
-    # Create new df with a multiindex based on two columns
-    df = df.set_index(['Retailer', 'Parent Brand'])
+    # Create and query multiindex based on two columns in new df
+    df = df.set_index(['Retailer', 'Parent Brand']).xs(focus_brand, level='Parent Brand')
 
-    # Query df to return cross-section of rows to show metrics by Retailer only
-    by_brand = df.xs(focus_brand, level='Parent Brand')
+    # Print row(s) with highest percentage, showing strongest retailer affinity
+    print "\n"
+    print df[df['Percentage %'] == df['Percentage %'].max()]
+    print "\n"
 
-    print by_brand.sortlevel(inplace=True)
-    print by_brand['Percentage %'].idxmax()
+    raw_input("Press 'Enter' to see all the retailers for " + focus_brand + ".\n\n")
 
+    print df.sort_values(by='Percentage %', ascending=False)
+    print "\n\n"
 
-retailer_affinity('Monster')
 
 ################################################################################
+
+
 def count_hhs(brand=None, retailer=None, start_date=None, end_date=None):
     """Returns the number of households given any of the optional inputs."""
     
