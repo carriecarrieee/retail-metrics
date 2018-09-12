@@ -72,10 +72,20 @@ def count_hhs(brand=None, retailer=None, start_date=None, end_date=None):
     
     df = create_df()
 
-    print df.groupby([retailer])['User ID'].nunique()
+    print df.groupby(['User ID'])['Retailer'].nunique(dropna=True).count()
+    print "\n\n"
 
 
-count_hhs(retailer="CVS")
+    print df['User ID'].nunique()
+    print "\n\n"
+
+
+    print df[df['Parent Brand']==brand].nunique()
+    print "\n\n"
+
+    # There are 93 total unique user IDs.
+
+count_hhs(brand='Rockstar', retailer='Costco')
 
 ################################################################################
 
