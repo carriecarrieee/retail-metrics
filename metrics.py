@@ -16,7 +16,7 @@ def create_df():
     # Using only the first 100 rows of data to save run time.
     url = "data/transactions.head.csv"
 
-    data = pd.read_csv(url)
+    data = pd.read_csv(url, parse_dates=['Date'], infer_datetime_format=True)
     df = pd.DataFrame(data) # Create DataFrame from CSV file
     
     if df.empty:
@@ -71,21 +71,66 @@ def count_hhs(brand=None, retailer=None, start_date=None, end_date=None):
     """Returns the number of households given any of the optional inputs."""
     
     df = create_df()
+    columns = []
+    args = ""
 
-    print df.groupby(['User ID'])['Retailer'].nunique(dropna=True).count()
+
+    if brand:
+        columns = ['Parent Brand']
+        args = brand
+
+        if retailer:
+            columns = ['Parent Brand','Retailer']
+            args = (brand, retailer)
+
+            if start_date:
+                columns = ['Parent Brand','Retailer','Date']
+                args = (brand, retailer, date)
+
+    elif retailer:
+        columns = ['Retailer']
+        args = retailer
+
+        if brand:
+            columns = ['Retailer','Parent Brand']
+            args = (retailer, brand)
+
+            if start_date:
+                columns = ['Retailer','Parent Brand','Date']
+                args = (retailer, brand, date)
+
+    elif start_date:
+        columns = ['Date']
+        args = date
+
+
+
+    elif end_date:
+        print "well this shouldn't print"
+
+    
+    if not columns or not args:
+        newdf = df
+    else:   
+        df = df.groupby(columns)
+        newdf = df['Date','Retailer','Parent Brand','User ID'].get_group(args)
+
+
+    print newdf['User ID'].nunique()
     print "\n\n"
 
 
-    print df['User ID'].nunique()
-    print "\n\n"
-
-
-    print df[df['Parent Brand']==brand].nunique()
-    print "\n\n"
 
     # There are 93 total unique user IDs.
+    # Outline: 
+    # Create series of "if" statements to see if each argument is given.
+    # (Don't use switch/case here.)
+    # Inside each if block, modify df according to that ONE parameter.
+    # At the end of all the if blocks, the final df should have the data in the
+    # way we want it, and so we can simply call .nunique() on the Series.
+    # Next: work on the Datetime object.
 
-count_hhs(brand='Rockstar', retailer='Costco')
+count_hhs(brand='5 Hour Energy')
 
 ################################################################################
 
