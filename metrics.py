@@ -59,24 +59,19 @@ def retailer_affinity(focus_brand):
     print "\n\n"
 
 
-# retailer_affinity('Monster')
-# retailer_affinity('Red Bull')
-# retailer_affinity('Rockstar')
-# retailer_affinity('5 Hour Energy')
-
 ################################################################################
 
 
 def count_hhs(brand=None, retailer=None, start_date=None, end_date=None):
     """Returns the number of households given any of the optional inputs."""
     
-    # Prepare df for date manipulation
+    # Prepare df for date manipulation; 'Date' column is now the index
     df = create_df().set_index(['Date']).sort_index()
 
     columns = []
     params = []
 
-
+    # Considering if each input was given
     if brand:
         columns.append('Parent Brand')
         params.append(brand)
@@ -117,8 +112,6 @@ def count_hhs(brand=None, retailer=None, start_date=None, end_date=None):
     print "\n\n"
 
 
-# count_hhs(start_date='2014-01-01', end_date='2014-02-01', brand='5 Hour Energy', retailer='Walmart')
-
 ################################################################################
 
 
@@ -141,6 +134,4 @@ def top_buying_brand():
     print "\n\n"
 
 
-# top_buying_brand()
-
-
+################################################################################
