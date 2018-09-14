@@ -11,9 +11,10 @@ def create_df():
     # Trips to the store for various energy drink brands in CSV format.
     # Each line belongs to a purchase at a retailer for a given parent brand,
     # including total dollars for the item.
-    url = "https://s3.amazonaws.com/isc-isc/trips_gdrive.csv"
+    #url = "https://s3.amazonaws.com/isc-isc/trips_gdrive.csv"
 
-    # Test data of first 100 rows: url = "data/transactions.head.csv"
+    # Test data of first 100 rows: 
+    url = "data/transactions.head.csv"
 
     data = pd.read_csv(url, parse_dates=['Date'], infer_datetime_format=True)
     df = pd.DataFrame(data) # Create DataFrame from CSV file
@@ -135,3 +136,67 @@ def top_buying_brand():
 
 
 ################################################################################
+
+
+def take_input():
+    """Takes user input and calls the appropriate function."""
+
+    input = raw_input("\nWhich metric would you like to see?\n\n \
+        a) Retailer Affinity \n \
+        b) Number of Households \n \
+        c) Top Buying Brand\n")
+
+    if input == 'a':
+        brand = raw_input("\nPlease enter a brand: \
+            5 Hour Energy \n \
+            Monster \n \
+            Red Bull \n \
+            Rockstar\n")
+
+        retailer_affinity(brand)
+
+    elif input == 'b':
+        ans1 = raw_input("\nWould you like to select an energy drink brand y/n: \n")
+        if ans1 == 'Y':
+            brand = raw_input("Enter an energy drink brand: \n \
+                5 Hour Energy \n \
+                Monster \n \
+                Red Bull \n \
+                Rockstar\n")
+        else:
+            brand = None
+
+        ans2 = raw_input("\nWould you like to enter a retailer? y/n: \n")
+        if ans2 == 'y':
+            retailer = raw_input("Enter a retailer: \n \
+                Costco \n \
+                CVS \n \
+                Kroger \n \
+                Publix \n \
+                Target \n \
+                Walgreens \n \
+                Walmart \n")
+        else:
+            brand = None
+
+        ans3 = raw_input("\nWould you like to enter a start date? y/n: \n")
+        if ans3 == 'y':
+            start_date = raw_input("Enter a start date (YYYY-MM-DD): \n")
+        else:
+            start_date = None
+
+        ans4 = raw_input("\nWould you like to enter an end date? y/n: \n")
+        if ans4 == 'y':
+            end_date = raw_input("Enter an end date (YYYY-MM-DD): \n")
+        else:
+            end_date = None
+
+        count_hhs(brand=brand, retailer=retailer, start_date=start_date, end_date=end_date)
+
+    elif input == 'c':
+        top_buying_brand()
+
+    else:
+        print "Invalid input. Please try again and enter only A, B, or C.\n"
+
+take_input()
