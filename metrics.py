@@ -59,6 +59,7 @@ def retailer_affinity(focus_brand):
     print df.sort_values(by='Percentage %', ascending=False)
     print "\n\n"
 
+
 # retailer_affinity('Monster')
 # retailer_affinity('Red Bull')
 # retailer_affinity('Rockstar')
@@ -70,67 +71,54 @@ def retailer_affinity(focus_brand):
 def count_hhs(brand=None, retailer=None, start_date=None, end_date=None):
     """Returns the number of households given any of the optional inputs."""
     
-    df = create_df()
+    # Prepare df for date manipulation
+    df = create_df().set_index(['Date']).sort_index()
+
     columns = []
-    args = ""
+    params = []
 
 
     if brand:
-        columns = ['Parent Brand']
-        args = brand
+        columns.append('Parent Brand')
+        params.append(brand)
 
-        if retailer:
-            columns = ['Parent Brand','Retailer']
-            args = (brand, retailer)
+    if retailer:
+        columns.append('Retailer')
+        params.append(retailer)
 
-            if start_date:
-                columns = ['Parent Brand','Retailer','Date']
-                args = (brand, retailer, date)
+    if start_date:
+        start_date = pd.to_datetime(start_date, infer_datetime_format=True)
+        df = df.loc[start_date:]
 
-    elif retailer:
-        columns = ['Retailer']
-        args = retailer
-
-        if brand:
-            columns = ['Retailer','Parent Brand']
-            args = (retailer, brand)
-
-            if start_date:
-                columns = ['Retailer','Parent Brand','Date']
-                args = (retailer, brand, date)
-
-    elif start_date:
-        columns = ['Date']
-        args = date
+    if end_date:
+        end_date = pd.to_datetime(end_date, infer_datetime_format=True)
+        df = df.loc[:end_date]
 
 
-
-    elif end_date:
-        print "well this shouldn't print"
-
-    
-    if not columns or not args:
+    if not columns or not params: # Case for empty lists
         newdf = df
-    else:   
-        df = df.groupby(columns)
-        newdf = df['Date','Retailer','Parent Brand','User ID'].get_group(args)
+
+    else:
+        if len(params) < 2: # Since tuples w/ one item have a trailing comma
+            args = params[0]
+        else:
+            args = tuple(params) # Convert to tuple to pass into get_group()
 
 
-    print newdf['User ID'].nunique()
+        df = df.groupby(columns) # Group by current list of parameters
+        newdf = df['Retailer','Parent Brand','User ID'].get_group(args)
+
+    # Count number of unique User IDs from the final newdf
+    hhs = newdf['User ID'].nunique()
+
+    print "\nGiven the parameter(s), the number of unique household(s) is: {}.".format(hhs)
+    raw_input("\n\nPress 'Enter' to see the expanded results:\n\n")
+
+    print newdf
     print "\n\n"
 
 
-
-    # There are 93 total unique user IDs.
-    # Outline: 
-    # Create series of "if" statements to see if each argument is given.
-    # (Don't use switch/case here.)
-    # Inside each if block, modify df according to that ONE parameter.
-    # At the end of all the if blocks, the final df should have the data in the
-    # way we want it, and so we can simply call .nunique() on the Series.
-    # Next: work on the Datetime object.
-
-count_hhs(brand='5 Hour Energy')
+# count_hhs(start_date='2014-01-01', end_date='2014-02-01', brand='5 Hour Energy', retailer='Walmart')
 
 ################################################################################
 
@@ -140,16 +128,19 @@ def top_buying_brand():
     
     df = create_df()
 
-    # print df.types
-
     # Convert string obj to int type
     df['Item Dollars'] = df['Item Dollars'].str[1:].astype(int)
 
     # Sum up $ spent by each unique household ID
-    df = df.groupby(['Parent Brand', 'User ID'])['Item Dollars'].sum().reset_index()
+    df = df.groupby(['Parent Brand','User ID'])['Item Dollars'] \
+        .sum() \
+        .reset_index() \
+        .set_index(['Parent Brand'])
 
     print "\n" + "Brand with the top buying rate ($ spent / HH):" + "\n"
     print df[df['Item Dollars'] == df['Item Dollars'].max()]
+    print "\n\n"
+
 
 # top_buying_brand()
 
