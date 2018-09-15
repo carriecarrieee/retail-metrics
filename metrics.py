@@ -16,10 +16,10 @@ def create_df():
     # Test data of first 100 rows: 
     url = "data/transactions.head.csv"
 
-    data = pd.read_csv(url, parse_dates=['Date'], infer_datetime_format=True)
-    df = pd.DataFrame(data) # Create DataFrame from CSV file
-    
-    if df.empty:
+    try:
+        data = pd.read_csv(url, parse_dates=['Date'], infer_datetime_format=True)
+        df = pd.DataFrame(data) # Create DataFrame from CSV file
+    except:
         print "Error: No data found!"
     else:
         return df
@@ -197,6 +197,6 @@ def take_input():
         top_buying_brand()
 
     else:
-        print "Invalid input. Please try again and enter only A, B, or C.\n"
+        raise Exception("Invalid input. Please try again and enter only A, B, or C.\n")
 
 take_input()
