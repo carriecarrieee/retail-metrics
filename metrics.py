@@ -11,10 +11,10 @@ def create_df():
     # Trips to the store for various energy drink brands in CSV format.
     # Each line belongs to a purchase at a retailer for a given parent brand,
     # including total dollars for the item.
-    #url = "https://s3.amazonaws.com/isc-isc/trips_gdrive.csv"
+    url = "https://s3.amazonaws.com/isc-isc/trips_gdrive.csv"
 
     # Test data of first 100 rows: 
-    url = "data/transactions.head.csv"
+    #url = "data/transactions.head.csv"
 
     try:
         data = pd.read_csv(url, parse_dates=['Date'], infer_datetime_format=True)
