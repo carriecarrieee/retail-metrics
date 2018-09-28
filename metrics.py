@@ -1,5 +1,6 @@
 """Retail Metrics provides three business intelligence metrics based off of 
-   retail transaction data of various energy drink brands."""
+   retail transaction data of various energy drink brands.
+"""
 
 import numpy as np
 import pandas as pd
@@ -11,25 +12,36 @@ class Metrics:
         self.df = None
 
 
+    ############################################################################
+
+
     def get_df(self):
         """Creates a Panda DataFrame with transaction data."""
-           
+        
+        # This tests to see if df was already created; if not, the program will
+        # download and parse the data, and create a df. If a df already exists,
+        # the else block simply returns the df.
         if not self.df:
-            # Trips to the store for various energy drink brands in CSV format.
-            # Each line belongs to a purchase at a retailer for a given parent 
-            # brand, including total dollars for the item.
             
             # Test data of first 100 rows: 
             # url = "data/transactions.head.csv"
 
+            # Trips to the store for various energy drink brands in CSV format.
+            # Each line belongs to a purchase at a retailer for a given parent 
+            # brand, including total dollars for the item.
             url = "https://s3.amazonaws.com/isc-isc/trips_gdrive.csv"
 
             try:
-                self.data = pd.read_csv(url, parse_dates=['Date'], infer_datetime_format=True)
-                self.df = pd.DataFrame(self.data) # Create DataFrame from CSV file
+                self.data = pd.read_csv(url, parse_dates=['Date'], \
+                                             infer_datetime_format=True)
+
+                # Create DataFrame from CSV file
+                self.df = pd.DataFrame(self.data)
                 return self.df
+
             except:
                 print "Error: No data found!"
+
         else:
             return self.df
 
@@ -58,7 +70,7 @@ class Metrics:
            >>> myMetrics.retailer_affinity('5 Hour Energy')
            'CVS'
 
-           """
+        """
         
         df = Metrics().get_df()
 
@@ -76,8 +88,9 @@ class Metrics:
         df = df.set_index(['Retailer', 'Parent Brand']) \
                .xs(focus_brand, level='Parent Brand')
 
-        # Print row(s) with highest percentage, showing strongest retailer affinity
+        # Return the retailer with the highest percentage.
         return df[df['Percentage %'] == df['Percentage %'].max()].index[0]
+
 
     ############################################################################
 
@@ -132,10 +145,11 @@ class Metrics:
         if not columns or not params: # Case for empty lists
             newdf = df
 
+        
+        # Multiple keys to .get_group() must be passed through as a tuple.
+        # Since tuples with one item include a trailing comma i.e. (key,)
+        # this code ensures that a tuple of one item will simply show (key)
         else:
-            # Multiple keys to .get_group() must be passed through as a tuple.
-            # Since tuples with one item include a trailing comma i.e. (key,)
-            # this code ensures that a tuple of one item will simply show (key)
             if len(params) < 2:
                 args = params[0]
             else:
@@ -246,7 +260,10 @@ class Metrics:
             return Metrics().top_buying_brand()
 
         else:
-            raise Exception("Invalid input. Please try again and enter only A, B, or C.\n")
+            raise Exception("Invalid input. Please enter only A, B, or C.\n")
+
+
+################################################################################
 
 
 if __name__ == "__main__":
