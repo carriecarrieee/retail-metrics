@@ -20,9 +20,9 @@ class Metrics:
             # brand, including total dollars for the item.
             
             # Test data of first 100 rows: 
-            url = "data/transactions.head.csv"
+            # url = "data/transactions.head.csv"
 
-            # url = "https://s3.amazonaws.com/isc-isc/trips_gdrive.csv"
+            url = "https://s3.amazonaws.com/isc-isc/trips_gdrive.csv"
 
             try:
                 self.data = pd.read_csv(url, parse_dates=['Date'], infer_datetime_format=True)
@@ -45,17 +45,18 @@ class Metrics:
 
            Test:
 
-           retailer_affinity('Monster')
+           >>> myMetrics = Metrics()
+           >>> myMetrics.retailer_affinity('Monster')
+           'CVS'
 
+           >>> myMetrics.retailer_affinity('Red Bull')
+           'Publix'
 
-           retailer_affinity('Red Bull')
+           >>> myMetrics.retailer_affinity('Rockstar')
+           'Walgreens'
 
-
-           retailer_affinity('Rockstar')
-
-
-           retailer_affinity('5 Hour Energy')
-
+           >>> myMetrics.retailer_affinity('5 Hour Energy')
+           'CVS'
 
            """
         
@@ -71,25 +72,38 @@ class Metrics:
         # Add column of drinks per brand divided by total units per retailer
         df['Percentage %'] = df['Item Units'] / df['Total by Ret'] * 100
 
-        # Create and query multiindex based on two columns in new df
-        df = df.set_index(['Retailer', 'Parent Brand']).xs(focus_brand, level='Parent Brand')
+        # Create and query multiindex based on two columns in new df, then sort
+        df = df.set_index(['Retailer', 'Parent Brand']) \
+               .xs(focus_brand, level='Parent Brand')
 
         # Print row(s) with highest percentage, showing strongest retailer affinity
-        print "\n" + focus_brand + ":\n"
-        print df[df['Percentage %'] == df['Percentage %'].max()]
-        print "\n"
-
-        raw_input("Press 'Enter' to see all the retailers for " + focus_brand + ".\n\n")
-
-        print df.sort_values(by='Percentage %', ascending=False)
-        print "\n\n"
-
+        return df[df['Percentage %'] == df['Percentage %'].max()].index[0]
 
     ############################################################################
 
 
     def count_hhs(self, brand=None, retailer=None, start_date=None, end_date=None):
-        """Returns the number of households given any of the optional inputs."""
+        """Returns the number of households given any of the optional inputs.
+
+           Test:
+
+            >>> myMetrics = Metrics()
+            >>> myMetrics.count_hhs(start_date='2014-01-01', end_date='2014-02-01')
+            2488
+            
+            >>> myMetrics.count_hhs(retailer='CVS')
+            715
+
+            >>> myMetrics.count_hhs(start_date='2014-01-01', brand='Rockstar')
+            2312
+
+            >>> myMetrics.count_hhs(end_date='2014-02-01', brand='Monster', retailer='Walmart')
+            506
+
+            >>> myMetrics.count_hhs(start_date='2014-01-01', end_date='2014-02-01', brand='5 Hour Energy', retailer='Publix')
+            10
+
+        """
         
         # Prepare df for date manipulation; 'Date' column is now the index
         df = Metrics().get_df().set_index(['Date']).sort_index()
@@ -119,7 +133,10 @@ class Metrics:
             newdf = df
 
         else:
-            if len(params) < 2: # Since tuples w/ one item have a trailing comma
+            # Multiple keys to .get_group() must be passed through as a tuple.
+            # Since tuples with one item include a trailing comma i.e. (key,)
+            # this code ensures that a tuple of one item will simply show (key)
+            if len(params) < 2:
                 args = params[0]
             else:
                 args = tuple(params) # Convert to tuple to pass into get_group()
@@ -137,9 +154,12 @@ class Metrics:
 
     def top_buying_brand(self):
         """Identifies the brand with the top buying rate ($ spent / HH).
+
            Test:
 
-           top_buying_brand()
+           >>> myMetrics = Metrics()
+           >>> myMetrics.top_buying_brand()
+           'Rockstar'
 
         """
         
@@ -155,7 +175,7 @@ class Metrics:
             .set_index(['Parent Brand'])
 
         # Brand with the top buying rate ($ spent / HH):"
-        return df[df['Item Dollars'] == df['Item Dollars'].max()]
+        return df[df['Item Dollars'] == df['Item Dollars'].max()].index[0]
 
 
     ############################################################################
@@ -170,16 +190,17 @@ class Metrics:
             c) Top Buying Brand\n")
 
         if input == 'a':
-            brand = raw_input("\nPlease enter a brand: \
+            brand = raw_input("\nEnter an energy drink brand: \n \
                 5 Hour Energy \n \
                 Monster \n \
                 Red Bull \n \
                 Rockstar\n")
 
-            Metrics().retailer_affinity(brand)
+            return Metrics().retailer_affinity(brand)
+
 
         elif input == 'b':
-            ans1 = raw_input("\nWould you like to select an energy drink brand y/n: \n")
+            ans1 = raw_input("\nSelect energy drink brand? y/n: \n")
             if ans1 == 'Y':
                 brand = raw_input("Enter an energy drink brand: \n \
                     5 Hour Energy \n \
@@ -189,7 +210,7 @@ class Metrics:
             else:
                 brand = None
 
-            ans2 = raw_input("\nWould you like to enter a retailer? y/n: \n")
+            ans2 = raw_input("\nSelect a retailer? y/n: \n")
             if ans2 == 'y':
                 retailer = raw_input("Enter a retailer: \n \
                     Costco \n \
@@ -200,7 +221,7 @@ class Metrics:
                     Walgreens \n \
                     Walmart \n")
             else:
-                brand = None
+                retailer = None
 
             ans3 = raw_input("\nWould you like to enter a start date? y/n: \n")
             if ans3 == 'y':
@@ -214,16 +235,23 @@ class Metrics:
             else:
                 end_date = None
 
-            Metrics().count_hhs(brand=brand, retailer=retailer, start_date=start_date, end_date=end_date)
+            return Metrics().count_hhs( \
+                            brand=brand, \
+                            retailer=retailer, \
+                            start_date=start_date, \
+                            end_date=end_date)
 
+        
         elif input == 'c':
-            Metrics().top_buying_brand()
+            return Metrics().top_buying_brand()
 
         else:
             raise Exception("Invalid input. Please try again and enter only A, B, or C.\n")
 
 
-#if __name__ == "__main__":
-myMetrics = Metrics()
-myMetrics.main()
+if __name__ == "__main__":
+    import doctest
 
+    result = doctest.testmod()
+    if result.failed == 0:
+        print "ALL TESTS PASSED"
