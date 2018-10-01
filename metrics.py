@@ -9,7 +9,7 @@ import pandas as pd
 class Metrics:
 
     def __init__(self):
-        self.df = None
+        self.data = None
 
 
     ############################################################################
@@ -21,10 +21,7 @@ class Metrics:
         # This tests to see if df was already created; if not, the program will
         # download and parse the data, and create a df. If a df already exists,
         # the else block simply returns the df.
-        if not self.df:
-            
-            # Test data of first 100 rows: 
-            # url = "data/transactions.head.csv"
+        if self.data is None:
 
             # Trips to the store for various energy drink brands in CSV format.
             # Each line belongs to a purchase at a retailer for a given parent 
@@ -34,16 +31,11 @@ class Metrics:
             try:
                 self.data = pd.read_csv(url, parse_dates=['Date'], \
                                              infer_datetime_format=True)
-
-                # Create DataFrame from CSV file
-                self.df = pd.DataFrame(self.data)
-                return self.df
-
             except:
                 print "Error: No data found!"
 
-        else:
-            return self.df
+        # Create DataFrame from CSV file
+        return self.data
 
 
     ############################################################################
@@ -72,14 +64,16 @@ class Metrics:
 
         """
         
-        df = Metrics().get_df()
+        df = self.get_df()
 
         # Add column of total drink units per retailer to perform math 
-        df['Total by Ret'] = df.groupby(['Retailer'])['Item Units'].transform('sum')
+        df['Total by Ret'] = df.groupby(['Retailer'])['Item Units'] \
+                               .transform('sum')
 
         # Sum up column of total drink units per brand
-        df = df.groupby(['Retailer', 'Parent Brand', 'Total by Ret']) \
-            ['Item Units'].sum().reset_index()
+        df = df.groupby(['Retailer', 'Parent Brand', 'Total by Ret'])['Item Units'] \
+               .sum() \
+               .reset_index()
 
         # Add column of drinks per brand divided by total units per retailer
         df['Percentage %'] = df['Item Units'] / df['Total by Ret'] * 100
@@ -119,7 +113,7 @@ class Metrics:
         """
         
         # Prepare df for date manipulation; 'Date' column is now the index
-        df = Metrics().get_df().set_index(['Date']).sort_index()
+        df = self.get_df().set_index(['Date']).sort_index()
 
         columns = []
         params = []
@@ -177,16 +171,16 @@ class Metrics:
 
         """
         
-        df = Metrics().get_df()
+        df = self.get_df()
 
         # Convert string obj to int type
         df['Item Dollars'] = df['Item Dollars'].str[1:].astype(int)
 
         # Sum up $ spent by each unique household ID
         df = df.groupby(['Parent Brand','User ID'])['Item Dollars'] \
-            .sum() \
-            .reset_index() \
-            .set_index(['Parent Brand'])
+               .sum() \
+               .reset_index() \
+               .set_index(['Parent Brand'])
 
         # Brand with the top buying rate ($ spent / HH):"
         return df[df['Item Dollars'] == df['Item Dollars'].max()].index[0]
@@ -210,7 +204,7 @@ class Metrics:
                 Red Bull \n \
                 Rockstar\n")
 
-            return Metrics().retailer_affinity(brand)
+            return self.retailer_affinity(brand)
 
 
         elif input == 'b':
@@ -249,15 +243,15 @@ class Metrics:
             else:
                 end_date = None
 
-            return Metrics().count_hhs( \
-                            brand=brand, \
-                            retailer=retailer, \
-                            start_date=start_date, \
-                            end_date=end_date)
+            return self.count_hhs( \
+                        brand=brand, \
+                        retailer=retailer, \
+                        start_date=start_date, \
+                        end_date=end_date)
 
         
         elif input == 'c':
-            return Metrics().top_buying_brand()
+            return self.top_buying_brand()
 
         else:
             raise Exception("Invalid input. Please enter only A, B, or C.\n")
